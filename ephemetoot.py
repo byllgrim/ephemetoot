@@ -23,7 +23,6 @@
 
 from argparse import ArgumentParser
 import config
-import json
 from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
