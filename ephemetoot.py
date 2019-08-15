@@ -28,14 +28,13 @@ from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
 
-def unboostToot(toot, deleted_count):
+def unboostToot(toot):
         print(
             "👎 unboosting toot "
             + str(toot.id)
             + " boosted "
             + toot.created_at.strftime("%d %b %Y")
         )
-        deleted_count += 1
         # unreblog the original toot (their toot), not the toot
         # created by boosting (your toot)
         if not options.test:
@@ -45,12 +44,12 @@ def unboostToot(toot, deleted_count):
                 )
             mastodon.status_unreblog(toot.reblog)
 
-def deleteToot(toot, deleted_count):
+def deleteToot(toot):
     if cutoff_date <= toot.created_at:
         return
 
     if hasattr(toot, "reblog") and toot.reblog:
-        unboostToot(toot, deleted_count)
+        unboostToot(toot)
     else:
         print(
             "❌ deleting toot "
@@ -58,7 +57,6 @@ def deleteToot(toot, deleted_count):
             + " tooted "
             + toot.created_at.strftime("%d %b %Y")
         )
-        deleted_count += 1
         time.sleep(2) # Be nice to the server
         if not options.test:
             if mastodon.ratelimit_remaining == 0:
@@ -67,10 +65,10 @@ def deleteToot(toot, deleted_count):
                 )
             mastodon.status_delete(toot)
 
-def checkToots(timeline, deleted_count=0):
+def checkToots(timeline):
     for toot in timeline:
         try:
-            deleteToot(toot, deleted_count)
+            deleteToot(toot)
         except MastodonError as e:
             print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
             print("Waiting 1 minute before re-trying...")
@@ -101,16 +99,7 @@ def checkToots(timeline, deleted_count=0):
         max_id = timeline[-1:][0].id
         next_batch = mastodon.account_statuses(user_id, limit=40, max_id=max_id)
         if len(next_batch) > 0:
-            checkToots(next_batch, deleted_count)
-        else:
-            if options.test:
-                print(
-                    "Test run. This would have removed "
-                    + str(deleted_count)
-                    + " toots."
-                )
-            else:
-                print("Removed " + str(deleted_count) + " toots.")
+            checkToots(next_batch)
     except IndexError:
         print("No toots found!")
 
