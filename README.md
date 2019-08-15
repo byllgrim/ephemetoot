@@ -1,3 +1,5 @@
+THIS FORK IS GONNA MUNTZ THE SHIT OUT OF THE ORIGINAL! Sorry
+
 A script for deleting old toots.
 
 Based partially on [tweet-deleting script](https://gist.github.com/flesueur/bcb2d9185b64c5191915d860ad19f23f) by [@flesueur](https://github.com/flesueur)
@@ -10,8 +12,8 @@ This script requires Python3, the `mastodon.py` package and an API access token.
 
 # Setup
 
-1. Install Python3 if you don't already have it (recommended approach is to [use Homebrew](https://docs.brew.sh/Homebrew-and-Python) if you're on MacOS)
-2. Install the mastodon package: `pip3 install mastodon.py`
+1. Install Python3
+2. `pip3 install mastodon.py`
 3. Copy _example.config.py_ to a new file called _config.py_ (e.g. `cp example.config.py config.py`)
 4. Log in to your Mastodon account using a web browser
     1. Click the settings cog
