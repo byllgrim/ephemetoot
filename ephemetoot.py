@@ -30,18 +30,17 @@ import time
 
 def unboostToot(toot):
         print(
-            "👎 unboosting toot "
+            "unboosting "
             + str(toot.id)
-            + " boosted "
+            + " from "
             + toot.created_at.strftime("%d %b %Y")
         )
+
         # unreblog the original toot (their toot), not the toot
         # created by boosting (your toot)
         if not options.test:
             if mastodon.ratelimit_remaining == 0:
-                print(
-                    "Rate limit reached. Waiting for reset..."
-                )
+                print("Rate limit reached. Waiting for reset...")
             mastodon.status_unreblog(toot.reblog)
 
 def deleteToot(toot):
@@ -52,9 +51,9 @@ def deleteToot(toot):
         unboostToot(toot)
     else:
         print(
-            "❌ deleting toot "
+            "deleting "
             + str(toot.id)
-            + " tooted "
+            + " from "
             + toot.created_at.strftime("%d %b %Y")
         )
         time.sleep(2) # Be nice to the server
@@ -73,12 +72,11 @@ def checkToots(timeline):
             print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
             print("Waiting 1 minute before re-trying...")
             time.sleep(60)
+
             try:
                 print("Attempting delete again")
                 mastodon.status_delete(toot)
-                time.sleep(
-                    2
-                ) # wait 2 secs between deletes to be a bit nicer to the server
+                time.sleep(2) # be nice to the server
             except Exception as e:
                 print("🛑 ERROR deleting toot - " + str(toot.id))
                 print(e)
@@ -108,7 +106,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--test",
         action = "store_true",
-        help = "do a test run without deleting any toots"
+        help = "test run without deleting anything"
     )
     options = parser.parse_args()
     if options.test:
