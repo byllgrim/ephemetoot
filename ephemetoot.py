@@ -40,8 +40,6 @@ def deleteBoost(toot):
 
         # unreblog the original toot (their toot), not the toot
         # created by boosting (your toot)
-        if mastodon.ratelimit_remaining == 0:
-            print("Rate limit reached. Waiting for reset...")
         mastodon.status_unreblog(toot.reblog)
 
 def deleteToot(toot):
@@ -56,8 +54,6 @@ def deleteToot(toot):
         return
 
     time.sleep(1) # Be nice to the server
-    if mastodon.ratelimit_remaining == 0:
-        print("Rate limit reached. Waiting for reset...")
     mastodon.status_delete(toot)
 
 def checkToots(timeline):
@@ -66,29 +62,32 @@ def checkToots(timeline):
             if toot.created_at >= cutoff_date:
                 break
 
+            if mastodon.ratelimit_remaining == 0:
+                print("rate limit reached; wait for reset")
+
             if hasattr(toot, "reblog") and toot.reblog:
                 deleteBoost(toot)
             else:
                 deleteToot(toot)
         except MastodonError as e:
             print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
-            print("Waiting 1 minute before re-trying...")
+            print("waiting 1 min before re-try")
             time.sleep(60)
 
             try:
-                print("Attempting delete again")
+                print("re-attempting delete")
                 mastodon.status_delete(toot)
                 time.sleep(1) # be nice to the server
             except Exception as e:
-                print("🛑 ERROR deleting toot - " + str(toot.id))
+                print("ERROR deleting toot - " + str(toot.id))
                 print(e)
-                print("Exiting due to error.")
+                print("exit due to error")
                 break
         except KeyboardInterrupt:
             print("Operation aborted.")
             break
         except Exception as e:
-            print("🛑 Unknown ERROR deleting toot - " + str(toot.id))
+            print("ERROR unknown while deleting toot - " + str(toot.id))
             print(e)
 
     # account_statuses has a 40-toot limit.
@@ -100,7 +99,7 @@ def checkToots(timeline):
         if len(next_batch) > 0:
             checkToots(next_batch)
     except IndexError:
-        print("No toots found!")
+        print("no toots found")
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -111,7 +110,7 @@ if __name__ == "__main__":
     )
     options = parser.parse_args()
     if options.test:
-        print("This is a test run...")
+        print("test run")
 
     mastodon = Mastodon(
         access_token=config.access_token,
