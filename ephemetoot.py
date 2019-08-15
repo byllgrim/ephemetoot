@@ -31,9 +31,7 @@ import time
 def checkToots(timeline, deleted_count=0):
     for toot in timeline:
         try:
-            if toot.id in config.toots_to_save:
-                print("💾 skipping saved toot - " + str(toot.id))
-            elif cutoff_date > toot.created_at:
+            if cutoff_date > toot.created_at:
                 if hasattr(toot, "reblog") and toot.reblog:
                     print(
                         "👎 unboosting toot "
