@@ -64,8 +64,8 @@ def deleteToot(toot):
 def checkToots(timeline):
     for toot in timeline:
         try:
-            if toot.created_at >= cutoff_data:
-                return
+            if toot.created_at >= cutoff_date:
+                break
 
             if hasattr(toot, "reblog") and toot.reblog:
                 deleteBoost(toot)
