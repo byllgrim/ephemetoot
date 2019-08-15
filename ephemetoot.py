@@ -80,15 +80,15 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--test", action="store_true",
                         help="test run without deleting anything")
+
     options = parser.parse_args()
     if options.test:
         print("test run")
 
-    mastodon = Mastodon(access_token=config.access_token,
-                        api_base_url=config.base_url, ratelimit_method="wait")
-
     cutoff_date = datetime.now(timezone.utc) - \
         timedelta(days=config.days_to_keep)
+    mastodon = Mastodon(access_token=config.access_token,
+                        api_base_url=config.base_url, ratelimit_method="wait")
     user_id = mastodon.account_verify_credentials().id
     timeline = mastodon.account_statuses(user_id, limit=40)
     checkToots(timeline)
