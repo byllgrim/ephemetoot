@@ -28,27 +28,6 @@ from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
 
-parser = ArgumentParser()
-parser.add_argument(
-    "--test", action="store_true", help="do a test run without deleting any toots"
-)
-options = parser.parse_args()
-if options.test:
-    print("This is a test run...")
-
-print("Fetching account details...")
-
-mastodon = Mastodon(
-    access_token=config.access_token,
-    api_base_url=config.base_url,
-    ratelimit_method="wait",
-)
-
-cutoff_date = datetime.now(timezone.utc) - timedelta(days=config.days_to_keep)
-user_id = mastodon.account_verify_credentials().id
-timeline = mastodon.account_statuses(user_id, limit=40)
-
-
 def checkToots(timeline, deleted_count=0):
     for toot in timeline:
         try:
@@ -131,9 +110,24 @@ def checkToots(timeline, deleted_count=0):
     except IndexError:
         print("No toots found!")
 
-
-# trigger from here
 if __name__ == "__main__":
-    account = mastodon.account(user_id)
-    print("Checking " + str(account.statuses_count) + " toots...")
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--test",
+        action = "store_true",
+        help = "do a test run without deleting any toots"
+    )
+    options = parser.parse_args()
+    if options.test:
+        print("This is a test run...")
+
+    mastodon = Mastodon(
+        access_token=config.access_token,
+        api_base_url=config.base_url,
+        ratelimit_method="wait",
+    )
+
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=config.days_to_keep)
+    user_id = mastodon.account_verify_credentials().id
+    timeline = mastodon.account_statuses(user_id, limit=40)
     checkToots(timeline)
