@@ -92,10 +92,9 @@ def checkToots(timeline):
             print("🛑 Unknown ERROR deleting toot - " + str(toot.id))
             print(e)
 
-    # the account_statuses call is paginated with a 40-toot limit
-    # get the id of the last toot to include as 'max_id' in the next API call.
-    # then keep triggering new rounds of checkToots() until there are no more
-    # toots to check
+    # account_statuses has a 40-toot limit.
+    # Get id of last toot to use as 'max_id' in next call.
+    # Then repeat checkToots() until no more toots to check.
     try:
         max_id = timeline[-1:][0].id
         next_batch = mastodon.account_statuses(user_id, limit=40, max_id=max_id)
