@@ -62,25 +62,8 @@ def checkToots(timeline):
                 deleteBoost(toot)
             else:
                 deleteToot(toot)
-        except MastodonError as e:
-            print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
-            print("waiting 1 min before re-try")
-            time.sleep(60)
-
-            try:
-                print("re-attempting delete")
-                mastodon.status_delete(toot)
-                time.sleep(1)  # be nice to the server
-            except Exception as e:
-                print("ERROR deleting toot - " + str(toot.id))
-                print(e)
-                print("exit due to error")
-                break
-        except KeyboardInterrupt:
-            print("Operation aborted.")
-            break
         except Exception as e:
-            print("ERROR unknown while deleting toot - " + str(toot.id))
+            print("ERROR while deleting " + str(toot.id))
             print(e)
 
     try:
