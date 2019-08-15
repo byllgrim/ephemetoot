@@ -36,12 +36,14 @@ def unboostToot(toot):
             + toot.created_at.strftime("%d %b %Y")
         )
 
+        if options.test:
+            return
+
         # unreblog the original toot (their toot), not the toot
         # created by boosting (your toot)
-        if not options.test:
-            if mastodon.ratelimit_remaining == 0:
-                print("Rate limit reached. Waiting for reset...")
-            mastodon.status_unreblog(toot.reblog)
+        if mastodon.ratelimit_remaining == 0:
+            print("Rate limit reached. Waiting for reset...")
+        mastodon.status_unreblog(toot.reblog)
 
 def deleteToot(toot):
     if cutoff_date <= toot.created_at:
@@ -56,13 +58,14 @@ def deleteToot(toot):
             + " from "
             + toot.created_at.strftime("%d %b %Y")
         )
+
+        if options.test:
+            return
+
         time.sleep(2) # Be nice to the server
-        if not options.test:
-            if mastodon.ratelimit_remaining == 0:
-                print(
-                    "Rate limit reached. Waiting for reset..."
-                )
-            mastodon.status_delete(toot)
+        if mastodon.ratelimit_remaining == 0:
+            print("Rate limit reached. Waiting for reset...")
+        mastodon.status_delete(toot)
 
 def checkToots(timeline):
     for toot in timeline:
