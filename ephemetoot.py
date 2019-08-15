@@ -38,8 +38,6 @@ def deleteBoost(toot):
         if options.test:
             return
 
-        # unreblog the original toot (their toot), not the toot
-        # created by boosting (your toot)
         mastodon.status_unreblog(toot.reblog)
 
 def deleteToot(toot):
@@ -53,7 +51,6 @@ def deleteToot(toot):
     if options.test:
         return
 
-    time.sleep(1) # Be nice to the server
     mastodon.status_delete(toot)
 
 def checkToots(timeline):
@@ -65,6 +62,7 @@ def checkToots(timeline):
             if mastodon.ratelimit_remaining == 0:
                 print("rate limit reached; wait for reset")
 
+            time.sleep(1) # Be nice to the server
             if hasattr(toot, "reblog") and toot.reblog:
                 deleteBoost(toot)
             else:
@@ -90,12 +88,13 @@ def checkToots(timeline):
             print("ERROR unknown while deleting toot - " + str(toot.id))
             print(e)
 
-    # account_statuses has a 40-toot limit.
-    # Get id of last toot to use as 'max_id' in next call.
-    # Then repeat checkToots() until no more toots to check.
     try:
-        max_id = timeline[-1:][0].id
-        next_batch = mastodon.account_statuses(user_id, limit=40, max_id=max_id)
+        last_id = timeline[-1:][0].id
+        next_batch = mastodon.account_statuses(
+            user_id,
+            limit=40,
+            max_id=last_id
+        )
         if len(next_batch) > 0:
             checkToots(next_batch)
     except IndexError:
