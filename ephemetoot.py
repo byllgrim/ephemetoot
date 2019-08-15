@@ -57,7 +57,7 @@ def checkToots(timeline):
     for toot in timeline:
         try:
             if toot.created_at >= cutoff_date:
-                break
+                continue
 
             if mastodon.ratelimit_remaining == 0:
                 print("rate limit reached; wait for reset")
