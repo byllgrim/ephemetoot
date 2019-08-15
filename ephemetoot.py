@@ -27,31 +27,26 @@ from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
 
+
 def deleteBoost(toot):
-        print(
-            "unboosting "
-            + str(toot.id)
-            + " from "
-            + toot.created_at.strftime("%d %b %Y")
-        )
+    print("unboosting " + str(toot.id) + " from " +
+          toot.created_at.strftime("%d %b %Y"))
 
-        if options.test:
-            return
+    if options.test:
+        return
 
-        mastodon.status_unreblog(toot.reblog)
+    mastodon.status_unreblog(toot.reblog)
+
 
 def deleteToot(toot):
-    print(
-        "deleting "
-        + str(toot.id)
-        + " from "
-        + toot.created_at.strftime("%d %b %Y")
-    )
+    print("deleting " + str(toot.id) + " from " +
+          toot.created_at.strftime("%d %b %Y"))
 
     if options.test:
         return
 
     mastodon.status_delete(toot)
+
 
 def checkToots(timeline):
     for toot in timeline:
@@ -62,7 +57,7 @@ def checkToots(timeline):
             if mastodon.ratelimit_remaining == 0:
                 print("rate limit reached; wait for reset")
 
-            time.sleep(1) # Be nice to the server
+            time.sleep(1)  # Be nice to the server
             if hasattr(toot, "reblog") and toot.reblog:
                 deleteBoost(toot)
             else:
@@ -75,7 +70,7 @@ def checkToots(timeline):
             try:
                 print("re-attempting delete")
                 mastodon.status_delete(toot)
-                time.sleep(1) # be nice to the server
+                time.sleep(1)  # be nice to the server
             except Exception as e:
                 print("ERROR deleting toot - " + str(toot.id))
                 print(e)
@@ -91,33 +86,26 @@ def checkToots(timeline):
     try:
         last_id = timeline[-1:][0].id
         next_batch = mastodon.account_statuses(
-            user_id,
-            limit=40,
-            max_id=last_id
-        )
+            user_id, limit=40, max_id=last_id)
         if len(next_batch) > 0:
             checkToots(next_batch)
     except IndexError:
         print("no toots found")
 
+
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument(
-        "--test",
-        action = "store_true",
-        help = "test run without deleting anything"
-    )
+    parser.add_argument("--test", action="store_true",
+                        help="test run without deleting anything")
     options = parser.parse_args()
     if options.test:
         print("test run")
 
-    mastodon = Mastodon(
-        access_token=config.access_token,
-        api_base_url=config.base_url,
-        ratelimit_method="wait",
-    )
+    mastodon = Mastodon(access_token=config.access_token,
+                        api_base_url=config.base_url, ratelimit_method="wait")
 
-    cutoff_date = datetime.now(timezone.utc) - timedelta(days=config.days_to_keep)
+    cutoff_date = datetime.now(timezone.utc) - \
+        timedelta(days=config.days_to_keep)
     user_id = mastodon.account_verify_credentials().id
     timeline = mastodon.account_statuses(user_id, limit=40)
     checkToots(timeline)
