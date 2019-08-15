@@ -28,7 +28,7 @@ from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
 
-def unboostToot(toot):
+def deleteBoost(toot):
         print(
             "unboosting "
             + str(toot.id)
@@ -46,31 +46,31 @@ def unboostToot(toot):
         mastodon.status_unreblog(toot.reblog)
 
 def deleteToot(toot):
-    if cutoff_date <= toot.created_at:
+    print(
+        "deleting "
+        + str(toot.id)
+        + " from "
+        + toot.created_at.strftime("%d %b %Y")
+    )
+
+    if options.test:
         return
 
-    if hasattr(toot, "reblog") and toot.reblog:
-        unboostToot(toot)
-    else:
-        print(
-            "deleting "
-            + str(toot.id)
-            + " from "
-            + toot.created_at.strftime("%d %b %Y")
-        )
-
-        if options.test:
-            return
-
-        time.sleep(2) # Be nice to the server
-        if mastodon.ratelimit_remaining == 0:
-            print("Rate limit reached. Waiting for reset...")
-        mastodon.status_delete(toot)
+    time.sleep(1) # Be nice to the server
+    if mastodon.ratelimit_remaining == 0:
+        print("Rate limit reached. Waiting for reset...")
+    mastodon.status_delete(toot)
 
 def checkToots(timeline):
     for toot in timeline:
         try:
-            deleteToot(toot)
+            if toot.created_at >= cutoff_data:
+                return
+
+            if hasattr(toot, "reblog") and toot.reblog:
+                deleteBoost(toot)
+            else:
+                deleteToot(toot)
         except MastodonError as e:
             print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
             print("Waiting 1 minute before re-trying...")
@@ -79,7 +79,7 @@ def checkToots(timeline):
             try:
                 print("Attempting delete again")
                 mastodon.status_delete(toot)
-                time.sleep(2) # be nice to the server
+                time.sleep(1) # be nice to the server
             except Exception as e:
                 print("🛑 ERROR deleting toot - " + str(toot.id))
                 print(e)
