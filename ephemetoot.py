@@ -40,11 +40,12 @@ def checkToots(timeline, deleted_count=0):
                         + toot.created_at.strftime("%d %b %Y")
                     )
                     deleted_count += 1
-                    # unreblog the original toot (their toot), not the toot created by boosting (your toot)
+                    # unreblog the original toot (their toot), not the toot
+                    # created by boosting (your toot)
                     if not options.test:
                         if mastodon.ratelimit_remaining == 0:
                             print(
-                                "Rate limit reached. Waiting for a rate limit reset..."
+                                "Rate limit reached. Waiting for reset..."
                             )
                         mastodon.status_unreblog(toot.reblog)
                 else:
@@ -57,15 +58,15 @@ def checkToots(timeline, deleted_count=0):
                     deleted_count += 1
                     time.sleep(
                         2
-                    )  # wait 2 secs between deletes to be a bit nicer to the server
+                    ) # wait 2 secs between deletes to be nicer to the server
                     if not options.test:
                         if mastodon.ratelimit_remaining == 0:
                             print(
-                                "Rate limit reached. Waiting for a rate limit reset..."
+                                "Rate limit reached. Waiting for reset..."
                             )
                         mastodon.status_delete(toot)
         except MastodonError as e:
-            print("🛑 ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
+            print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
             print("Waiting 1 minute before re-trying...")
             time.sleep(60)
             try:
@@ -73,7 +74,7 @@ def checkToots(timeline, deleted_count=0):
                 mastodon.status_delete(toot)
                 time.sleep(
                     2
-                )  # wait 2 secs between deletes to be a bit nicer to the server
+                ) # wait 2 secs between deletes to be a bit nicer to the server
             except Exception as e:
                 print("🛑 ERROR deleting toot - " + str(toot.id))
                 print(e)
@@ -88,7 +89,8 @@ def checkToots(timeline, deleted_count=0):
 
     # the account_statuses call is paginated with a 40-toot limit
     # get the id of the last toot to include as 'max_id' in the next API call.
-    # then keep triggering new rounds of checkToots() until there are no more toots to check
+    # then keep triggering new rounds of checkToots() until there are no more
+    # toots to check
     try:
         max_id = timeline[-1:][0].id
         next_batch = mastodon.account_statuses(user_id, limit=40, max_id=max_id)
