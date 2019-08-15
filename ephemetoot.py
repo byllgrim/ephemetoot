@@ -28,43 +28,46 @@ from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
 
+def deleteToot(toot, deleted_count):
+    if cutoff_date > toot.created_at:
+        if hasattr(toot, "reblog") and toot.reblog:
+            print(
+                "👎 unboosting toot "
+                + str(toot.id)
+                + " boosted "
+                + toot.created_at.strftime("%d %b %Y")
+            )
+            deleted_count += 1
+            # unreblog the original toot (their toot), not the toot
+            # created by boosting (your toot)
+            if not options.test:
+                if mastodon.ratelimit_remaining == 0:
+                    print(
+                        "Rate limit reached. Waiting for reset..."
+                    )
+                mastodon.status_unreblog(toot.reblog)
+        else:
+            print(
+                "❌ deleting toot "
+                + str(toot.id)
+                + " tooted "
+                + toot.created_at.strftime("%d %b %Y")
+            )
+            deleted_count += 1
+            time.sleep(
+                2
+            ) # wait 2 secs between deletes to be nicer to the server
+            if not options.test:
+                if mastodon.ratelimit_remaining == 0:
+                    print(
+                        "Rate limit reached. Waiting for reset..."
+                    )
+                mastodon.status_delete(toot)
+
 def checkToots(timeline, deleted_count=0):
     for toot in timeline:
         try:
-            if cutoff_date > toot.created_at:
-                if hasattr(toot, "reblog") and toot.reblog:
-                    print(
-                        "👎 unboosting toot "
-                        + str(toot.id)
-                        + " boosted "
-                        + toot.created_at.strftime("%d %b %Y")
-                    )
-                    deleted_count += 1
-                    # unreblog the original toot (their toot), not the toot
-                    # created by boosting (your toot)
-                    if not options.test:
-                        if mastodon.ratelimit_remaining == 0:
-                            print(
-                                "Rate limit reached. Waiting for reset..."
-                            )
-                        mastodon.status_unreblog(toot.reblog)
-                else:
-                    print(
-                        "❌ deleting toot "
-                        + str(toot.id)
-                        + " tooted "
-                        + toot.created_at.strftime("%d %b %Y")
-                    )
-                    deleted_count += 1
-                    time.sleep(
-                        2
-                    ) # wait 2 secs between deletes to be nicer to the server
-                    if not options.test:
-                        if mastodon.ratelimit_remaining == 0:
-                            print(
-                                "Rate limit reached. Waiting for reset..."
-                            )
-                        mastodon.status_delete(toot)
+            deleteToot(toot, deleted_count)
         except MastodonError as e:
             print("ERROR deleting toot - " + str(toot.id) + " - " + e.args[3])
             print("Waiting 1 minute before re-trying...")
