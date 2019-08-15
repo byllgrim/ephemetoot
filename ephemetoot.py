@@ -28,11 +28,7 @@ from mastodon import Mastodon, MastodonError
 from datetime import datetime, timedelta, timezone
 import time
 
-def deleteToot(toot, deleted_count):
-    if cutoff_date <= toot.created_at:
-        return
-
-    if hasattr(toot, "reblog") and toot.reblog:
+def unboostToot(toot, deleted_count):
         print(
             "👎 unboosting toot "
             + str(toot.id)
@@ -48,6 +44,13 @@ def deleteToot(toot, deleted_count):
                     "Rate limit reached. Waiting for reset..."
                 )
             mastodon.status_unreblog(toot.reblog)
+
+def deleteToot(toot, deleted_count):
+    if cutoff_date <= toot.created_at:
+        return
+
+    if hasattr(toot, "reblog") and toot.reblog:
+        unboostToot(toot, deleted_count)
     else:
         print(
             "❌ deleting toot "
@@ -56,9 +59,7 @@ def deleteToot(toot, deleted_count):
             + toot.created_at.strftime("%d %b %Y")
         )
         deleted_count += 1
-        time.sleep(
-            2
-        ) # wait 2 secs between deletes to be nicer to the server
+        time.sleep(2) # Be nice to the server
         if not options.test:
             if mastodon.ratelimit_remaining == 0:
                 print(
